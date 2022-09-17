@@ -37,9 +37,11 @@ contract Web3RSVP {
 
     address[] memory confirmedRSVPs;
     address[] memory claimedRSVPs;
-
+    // define array users who RSVP vs those who actually come to an event or claim RSVP 
 
     // this creates a new CreateEvent struct and adds it to the idToEvent mapping
+    // the key is the eventID and the value is the struct with properties grabbed from function arguments passed by the user, or some that we generate internally.
+    // false defines if there are no RSVPs.
     idToEvent[eventId] = CreateEvent(
         eventId,
         eventDataCID,
