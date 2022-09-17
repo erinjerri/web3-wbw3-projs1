@@ -1,34 +1,55 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.9;
 
-// Uncomment this line to use console.log
-// import "hardhat/console.sol";
+// create initial contract class, definte struct properties  
+contract Web3RSVP {
+    struct CreateEvent {
+        bytes32 eventId;
+        string eventDataCID;
+        address eventOwner;
+        uint256 eventTimestamp;
+        uint256 deposit;
+        uint256 maxCapacity;
+        address[] confirmedRSVPs;
+        address[] claimedRSVPs;
+        bool paidOut;
+   }
+   mapping(bytes32 => CreateEvent) public idToEvent;
+   // define mapping of eventID to struct
 
-contract Lock {
-    uint public unlockTime;
-    address payable public owner;
+// define functions and what it handles (tracking event RSVPs), limitation of event attendees etc.
+   function createNewEvent(
+    uint256 eventTimestamp,
+    uint256 deposit,
+    uint256 maxCapacity,
+    string calldata eventDataCID
+) external {
+    // generate an eventID based on other things passed in to generate a hash - decrease collision resistance
+    bytes32 eventId = keccak256(
+        abi.encodePacked(
+            msg.sender,
+            address(this),
+            eventTimestamp,
+            deposit,
+            maxCapacity
+        )
+    );
 
-    event Withdrawal(uint amount, uint when);
+    address[] memory confirmedRSVPs;
+    address[] memory claimedRSVPs;
 
-    constructor(uint _unlockTime) payable {
-        require(
-            block.timestamp < _unlockTime,
-            "Unlock time should be in the future"
-        );
 
-        unlockTime = _unlockTime;
-        owner = payable(msg.sender);
-    }
-
-    function withdraw() public {
-        // Uncomment this line, and the import of "hardhat/console.sol", to print a log in your terminal
-        // console.log("Unlock time is %o and block timestamp is %o", unlockTime, block.timestamp);
-
-        require(block.timestamp >= unlockTime, "You can't withdraw yet");
-        require(msg.sender == owner, "You aren't the owner");
-
-        emit Withdrawal(address(this).balance, block.timestamp);
-
-        owner.transfer(address(this).balance);
-    }
+    // this creates a new CreateEvent struct and adds it to the idToEvent mapping
+    idToEvent[eventId] = CreateEvent(
+        eventId,
+        eventDataCID,
+        msg.sender,
+        eventTimestamp,
+        deposit,
+        maxCapacity,
+        confirmedRSVPs,
+        claimedRSVPs,
+        false
+    );
+}
 }
